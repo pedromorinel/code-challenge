@@ -4,19 +4,19 @@ Uma aplicação completa de busca de filmes com Spring Boot (backend) e React (f
 
 1. **Clone o repositório**
    ```bash
-   git clone <repository-url>
-   cd web-app-code-challenge
+   git clone https://github.com/pedromorinel/code-challenge.git
+   cd code-challenge
    ```
 
 1. **Configure a API Key**
    ```bash
-   cp env.example .env
+   # Crie um novo .env a partir do env.example
    # Edite .env e adicione sua chave da API OMDB
    ```
 
 2. **Execute a aplicação**
    ```bash
-   docker-compose up --build
+   docker-compose up -d
    ```
    
 4. **Acesse a aplicação**
