@@ -1,0 +1,39 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: bffomdb
+  cache:
+    type: simple
+    cache-names:
+      - movieDetails
+      - movieSearch
+      - popularMovies
+
+logging:
+  level:
+    com.code.challenge.omdb.integration.bffomdb: INFO
+    org.springframework.web: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+
+omdb:
+  api:
+    url: http://www.omdbapi.com/
+    key: ${OMDB_API_KEY:your-api-key-here}
+
+cors:
+  allowed-origins: "http://localhost:3000,http://frontend:3000,http://127.0.0.1:3000,http://localhost:3001"
+  allowed-methods: "GET,POST,PUT,DELETE,OPTIONS"
+  allowed-headers: "*"
+  allow-credentials: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always 

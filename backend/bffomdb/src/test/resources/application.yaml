@@ -1,0 +1,37 @@
+spring:
+  application:
+    name: bff-omdb-test
+
+omdb:
+  api:
+    url: http://localhost:8089/mock-omdb/
+    key: test-api-key
+    timeout: 5s
+
+webclient:
+  timeout:
+    connection: 1s
+    read: 5s
+  max-memory-size: 1MB
+
+cors:
+  allowed-origins: http://localhost:3000,http://localhost:3001,http://localhost:4200
+  allowed-methods: GET,POST,PUT,DELETE,OPTIONS
+  allowed-headers: "*"
+  allow-credentials: true
+
+logging:
+  level:
+    com.code.challenge.omdb.integration.bffomdb: DEBUG
+    org.springframework.web.reactive.function.client: DEBUG
+    reactor.netty.http.client: WARN
+    org.springframework.boot.test: INFO
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
+management:
+  endpoints:
+    enabled-by-default: false
+  endpoint:
+    health:
+      enabled: true 

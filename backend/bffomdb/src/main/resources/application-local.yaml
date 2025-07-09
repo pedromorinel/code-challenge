@@ -1,0 +1,44 @@
+server:
+  port: 8080
+
+cors:
+  allowed-origins: http://localhost:3000,http://localhost:3001,http://localhost:4200
+  allowed-methods: GET,POST,PUT,DELETE,OPTIONS
+  allowed-headers: "*"
+  allow-credentials: true
+
+spring:
+  cache:
+    type: simple
+    cache-names: movieDetails,movieSearch,popularMovies
+  devtools:
+    restart:
+      enabled: true
+    livereload:
+      enabled: true
+  web:
+    resources:
+      cache:
+        period: 0
+
+rate-limiting:
+  requests-per-minute: 200
+  enabled: true
+
+logging:
+  level:
+    com.code.challenge.omdb.integration.bffomdb: DEBUG
+    org.springframework.web.reactive.function.client: DEBUG
+    org.springframework.boot.autoconfigure: INFO
+    org.springframework.web: DEBUG
+    reactor.netty.http.client: DEBUG
+    org.springframework.cache: DEBUG
+
+management:
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: "*" 
