@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { FiSearch } from 'react-icons/fi';
+import { FiSearch, FiSun, FiMoon } from 'react-icons/fi';
+import { useTheme } from '../../contexts/ThemeContext';
 
 const HeaderContainer = styled.div`
   display: flex;
   align-items: center;
   padding: ${({ theme }) => theme.spacing.lg} ${({ theme }) => theme.spacing.xl};
   background: ${({ theme }) => theme.colors.primary};
+  gap: ${({ theme }) => theme.spacing.lg};
   
   @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
     padding: ${({ theme }) => theme.spacing.md} ${({ theme }) => theme.spacing.lg};
+    gap: ${({ theme }) => theme.spacing.md};
   }
 `;
 
@@ -67,10 +70,53 @@ const SearchInput = styled.input`
   }
 `;
 
+const ThemeToggleButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: ${({ theme }) => theme.borderRadius.full};
+  background: ${({ theme }) => theme.colors.surface};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  color: ${({ theme }) => theme.colors.text.primary};
+  transition: all ${({ theme }) => theme.transitions.fast};
+  flex-shrink: 0;
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.accent};
+    border-color: ${({ theme }) => theme.colors.button.primary};
+    transform: scale(1.05);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  svg {
+    font-size: 20px;
+    transition: transform ${({ theme }) => theme.transitions.fast};
+  }
+
+  &:hover svg {
+    transform: rotate(15deg);
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
+    width: 40px;
+    height: 40px;
+    
+    svg {
+      font-size: 18px;
+    }
+  }
+`;
+
 const Header = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState('');
+  const { isDarkMode, toggleTheme } = useTheme();
 
   useEffect(() => {
     const queryFromUrl = searchParams.get('q') || '';
@@ -110,6 +156,13 @@ const Header = () => {
           />
         </form>
       </SearchContainer>
+      
+      <ThemeToggleButton 
+        onClick={toggleTheme}
+        title={isDarkMode ? 'Alternar para tema claro' : 'Alternar para tema escuro'}
+      >
+        {isDarkMode ? <FiSun /> : <FiMoon />}
+      </ThemeToggleButton>
     </HeaderContainer>
   );
 };

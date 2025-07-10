@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import styled from 'styled-components';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useLocation } from 'react-router-dom';
 import movieService from '../services/movieService';
 import MovieGrid from '../components/movie/MovieGrid';
 import { FiFilter, FiX } from 'react-icons/fi';
@@ -149,6 +149,7 @@ const ResultsText = styled.p`
 
 const SearchPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
   const [movies, setMovies] = useState([]);
   const [allMovies, setAllMovies] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -156,38 +157,23 @@ const SearchPage = () => {
   const [totalResults, setTotalResults] = useState(0);
 
   const [filters, setFilters] = useState({
-    query: searchParams.get('q') || '',
-    type: searchParams.get('type') || '',
-    year: searchParams.get('year') || '',
-    page: parseInt(searchParams.get('page')) || 1
+    query: '',
+    type: '',
+    year: '',
+    page: 1
   });
 
-  useEffect(() => {
-    const query = searchParams.get('q');
-    if (query && query !== filters.query) {
-      const newFilters = {
-        query: query,
-        type: searchParams.get('type') || '',
-        year: searchParams.get('year') || '',
-        page: parseInt(searchParams.get('page')) || 1
-      };
-      setFilters(newFilters);
-      searchMovies(query);
-    }
-  }, [searchParams.get('q')]);
-
-  useEffect(() => {
-    if (allMovies.length > 0) {
-      applyLocalFilters();
-    }
-  }, [filters.type, filters.year, allMovies]);
-
-  const searchMovies = async (query) => {
+  // Função de busca simplificada - sempre executa quando chamada
+  const searchMovies = useCallback(async (query) => {
     if (!query.trim()) return;
 
     try {
+      console.log('🔍 Executando busca para:', query);
       setLoading(true);
       setError(null);
+      setMovies([]);
+      setAllMovies([]);
+      setTotalResults(0);
 
       const searchParams = {
         query: query,
@@ -196,19 +182,22 @@ const SearchPage = () => {
 
       const response = await movieService.searchMovies(searchParams);
       
-      console.log('Search response:', response);
+      console.log('📦 Resposta da API:', response);
       
       if (response.Response === 'True' || response.success) {
         const movieResults = response.Search || response.search || [];
+        console.log('✅ Filmes encontrados:', movieResults.length);
         setAllMovies(movieResults);
         setTotalResults(response.totalResultsAsInt || 0);
       } else {
+        console.log('❌ Nenhum resultado encontrado');
         setAllMovies([]);
         setMovies([]);
         setTotalResults(0);
         setError(response.Error || response.error || 'Nenhum filme encontrado');
       }
     } catch (err) {
+      console.error('💥 Erro na busca:', err);
       setError(err.message);
       setAllMovies([]);
       setMovies([]);
@@ -216,9 +205,10 @@ const SearchPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const applyLocalFilters = () => {
+  // Função para aplicar filtros locais
+  const applyLocalFilters = useCallback(() => {
     let filteredMovies = [...allMovies];
 
     if (filters.type) {
@@ -233,11 +223,54 @@ const SearchPage = () => {
       );
     }
 
-    console.log('Filtros aplicados:', { type: filters.type, year: filters.year });
-    console.log('Filmes filtrados:', filteredMovies.length, 'de', allMovies.length);
+    console.log('🔧 Filtros aplicados:', { type: filters.type, year: filters.year });
+    console.log('📄 Filmes após filtro:', filteredMovies.length, 'de', allMovies.length);
 
     setMovies(filteredMovies);
-  };
+  }, [allMovies, filters.type, filters.year]);
+
+  // Reset completo do estado quando componente monta ou URL muda significativamente
+  useEffect(() => {
+    console.log('🔄 SearchPage montou ou URL mudou:', location.pathname + location.search);
+    
+    // Reset completo
+    setMovies([]);
+    setAllMovies([]);
+    setTotalResults(0);
+    setError(null);
+    setLoading(false);
+    
+    const query = searchParams.get('q') || '';
+    const type = searchParams.get('type') || '';
+    const year = searchParams.get('year') || '';
+    const page = parseInt(searchParams.get('page')) || 1;
+
+    console.log('📝 Parâmetros da URL:', { query, type, year, page });
+
+    const newFilters = {
+      query,
+      type,
+      year,
+      page
+    };
+
+    setFilters(newFilters);
+
+    // Sempre executa busca se há query, sem cache
+    if (query.trim()) {
+      console.log('🎯 Query encontrada, executando busca...');
+      searchMovies(query);
+    } else {
+      console.log('🧹 Sem query, mantendo estado limpo');
+    }
+  }, [location.search, searchMovies]);
+
+  // Effect para aplicar filtros quando dados mudam
+  useEffect(() => {
+    if (allMovies.length > 0) {
+      applyLocalFilters();
+    }
+  }, [allMovies, applyLocalFilters]);
 
   const updateSearchParams = (newFilters) => {
     const params = new URLSearchParams();
@@ -283,6 +316,16 @@ const SearchPage = () => {
     
     return `${totalCount} resultados encontrados para "${filters.query}"`;
   };
+
+  // Debug info no console
+  console.log('🎬 SearchPage render:', {
+    query: filters.query,
+    moviesCount: movies.length,
+    allMoviesCount: allMovies.length,
+    loading,
+    error,
+    pathname: location.pathname
+  });
 
   return (
     <SearchContainer>
